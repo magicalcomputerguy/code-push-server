@@ -5,6 +5,7 @@ import * as api from "./api";
 import { AzureStorage } from "./storage/azure-storage";
 import { fileUploadMiddleware } from "./file-upload-manager";
 import { JsonStorage } from "./storage/json-storage";
+import { S3Storage } from "./storage/s3-storage";
 import { RedisManager } from "./redis-manager";
 import { Storage } from "./storage/storage";
 import { Response } from "express";
@@ -41,7 +42,9 @@ export function start(done: (err?: any, server?: express.Express, storage?: Stor
 
   q<void>(null)
     .then(async () => {
-      if (useJsonStorage) {
+      if (process.env.USE_PRISMA) {
+        storage = new S3Storage();
+      } else if (useJsonStorage) {
         storage = new JsonStorage();
       } else if (!process.env.AZURE_KEYVAULT_ACCOUNT) {
         storage = new AzureStorage();

@@ -179,6 +179,12 @@ export function clone<T>(source: T): T {
   return JSON.parse(JSON.stringify(source));
 }
 
+export function merge(original: any, updates: any): void {
+  for (const property in updates) {
+    original[property] = updates[property];
+  }
+}
+
 export function isOwnedByCurrentUser(app: App): boolean {
   for (const email in app.collaborators) {
     const collaborator: CollaboratorProperties = app.collaborators[email];

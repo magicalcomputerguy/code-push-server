@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+  mongodb:
+    image: 'mongo'
+    ports:
+      - '27017:27017'
+  api1:
+    restart: on-failure
+    build: ./api
+    hostname: api1
+    ports:
+      - '81:3000'
+  api2:
+    restart: on-failure
+    build: ./api
+    hostname: api2
+    ports:
+      - '82:3000'
+  nginx:
+    build: ./nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - api1
+      - api2

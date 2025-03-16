@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id          String  @id @default(uuid()) @map("_id")
+  azureAdId   String?
+  createdTime BigInt
+  email       String
+  githubId    String?
+  microsoftId String?
+  name        String
+}
+
+model CollaboratorProperties {
+  id               String   @id @default(uuid()) @map("_id")
+  accountId        String?  @unique
+  isCurrentAccount Boolean?
+  permission       String
+  email            String
+  appId            String
+  app              App      @relation(fields: [appId], references: [id])
+
+  @@unique([email, appId])
+}
+
+model App {
+  id            String                   @id @default(uuid()) @map("_id")
+  name          String
+  createdTime   BigInt
+  collaborators CollaboratorProperties[]
+}
+
+model BlobInfo {
+  id                       String                     @id @default(uuid()) @map("_id")
+  size                     Int
+  url                      String
+  PackageHashToBlobInfoMap PackageHashToBlobInfoMap[]
+}
+
+model PackageHashToBlobInfoMap {
+  id          String   @id @default(uuid()) @map("_id")
+  packageHash String
+  blobInfoId  String
+  blobInfo    BlobInfo @relation(fields: [blobInfoId], references: [id])
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+
+  @@unique([packageHash, packageId])
+}
+
+model Package {
+  id                 String                     @id @default(uuid()) @map("_id")
+  appVersion         String
+  blobUrl            String
+  description        String
+  isDisabled         Boolean
+  isMandatory        Boolean
+  label              String?                    @unique
+  manifestBlobUrl    String
+  originalDeployment String?
+  originalLabel      String?
+  packageHash        String                     @unique
+  releasedBy         String?
+  releaseMethod      String?
+  rollout            Int?
+  size               Int
+  uploadTime         BigInt
+  diffPackageMap     PackageHashToBlobInfoMap[]
+  Deployment         Deployment[]
+}
+
+model Deployment {
+  id          String  @id @default(uuid()) @map("_id")
+  createdTime BigInt
+  name        String
+  key         String
+  package     Package @relation(fields: [packageId], references: [id])
+  packageId   String
+}
+
+model AccessKey {
+  id           String  @id @default(uuid()) @map("_id")
+  createdBy    String
+  createdTime  BigInt
+  expires      BigInt
+  description  String?
+  friendlyName String
+  isSession    Boolean?
+  name         String @unique
+}
